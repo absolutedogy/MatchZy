@@ -518,7 +518,8 @@ namespace MatchZy
         }
 
         private void HandleMapChangeCommand(CCSPlayerController? player, string mapName) {
-            if (!IsPlayerAdmin(player, "css_map", "@css/map")) {
+            
+            if (!IsPlayerAdmin(player, "css_map", "@css/map") && protectMapSwapCommand.Value) {
                 SendPlayerNotAdminMessage(player);
                 return;
             }
