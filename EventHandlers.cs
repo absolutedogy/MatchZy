@@ -45,9 +45,9 @@ public partial class MatchZy
                 if (isMatchSetup || matchModeOnly)
                 {
                     CsTeam team = GetPlayerTeam(player);
-                    Log($"[EventPlayerConnectFull] KICKING PLAYER STEAMID: {steamId}, Name: {player.PlayerName} (NOT ALLOWED!)");
                     if (team == CsTeam.None)
                     {
+                        Log($"[EventPlayerConnectFull] KICKING PLAYER STEAMID: {steamId}, Name: {player.PlayerName} (NOT ALLOWED!)");
                         KickPlayer(player);
                         return HookResult.Continue;
                     }
@@ -68,7 +68,8 @@ public partial class MatchZy
                 }
             }
             // May not be required, but just to be on safe side so that player data is properly updated in dictionaries
-            UpdatePlayersMap();
+            // Update: Commenting the below function as it was being called multiple times on map change.
+            // UpdatePlayersMap();
 
             if (readyAvailable && !matchStarted)
             {
@@ -280,7 +281,7 @@ public partial class MatchZy
         if (!isPractice || isDryRun) return HookResult.Continue;
         if(lastGrenadeThrownTime.TryGetValue(@event.Entityid, out var thrownTime)) 
         {
-            PrintToPlayerChat(@event.Userid, $"Smoke thrown by {@event.Userid.PlayerName} took {(DateTime.Now - thrownTime).TotalSeconds:0.00}s to detonate");
+            PrintToPlayerChat(@event.Userid, Localizer["matchzy.pracc.smoke", @event.Userid.PlayerName, $"{(DateTime.Now - thrownTime).TotalSeconds:0.00}"]);
             lastGrenadeThrownTime.Remove(@event.Entityid);
         }
         return HookResult.Continue;
@@ -291,7 +292,7 @@ public partial class MatchZy
         if (!isPractice || isDryRun) return HookResult.Continue;
         if(lastGrenadeThrownTime.TryGetValue(@event.Entityid, out var thrownTime)) 
         {
-            PrintToPlayerChat(@event.Userid, $"Flash thrown by {@event.Userid.PlayerName} took {(DateTime.Now - thrownTime).TotalSeconds:0.00}s to detonate");
+            PrintToPlayerChat(@event.Userid, Localizer["matchzy.pracc.flash", @event.Userid.PlayerName, $"{(DateTime.Now - thrownTime).TotalSeconds:0.00}"]);
             lastGrenadeThrownTime.Remove(@event.Entityid);
         }
         return HookResult.Continue;
@@ -302,7 +303,7 @@ public partial class MatchZy
         if (!isPractice || isDryRun) return HookResult.Continue;
         if(lastGrenadeThrownTime.TryGetValue(@event.Entityid, out var thrownTime)) 
         {
-            PrintToPlayerChat(@event.Userid, $"Grenade thrown by {@event.Userid.PlayerName} took {(DateTime.Now - thrownTime).TotalSeconds:0.00}s to detonate");
+            PrintToPlayerChat(@event.Userid, Localizer["matchzy.pracc.grenade", @event.Userid.PlayerName, $"{(DateTime.Now - thrownTime).TotalSeconds:0.00}"]);
             lastGrenadeThrownTime.Remove(@event.Entityid);
         }
         return HookResult.Continue;
@@ -314,8 +315,7 @@ public partial class MatchZy
         if (!isPractice || isDryRun) return HookResult.Continue;
         if(lastGrenadeThrownTime.TryGetValue(@event.Get<int>("entityid"), out var thrownTime)) 
         {
-            PrintToPlayerChat(@event.Userid, $"Molotov thrown by {@event.Userid.PlayerName} took {(DateTime.Now - thrownTime).TotalSeconds:0.00}s to detonate");
-            lastGrenadeThrownTime.Remove(@event.Get<int>("entityid"));
+            PrintToPlayerChat(@event.Userid, Localizer["matchzy.pracc.molotov", @event.Userid.PlayerName, $"{(DateTime.Now - thrownTime).TotalSeconds:0.00}"]);
         }
         return HookResult.Continue;
     }
@@ -325,7 +325,7 @@ public partial class MatchZy
         if (!isPractice || isDryRun) return HookResult.Continue;
         if(lastGrenadeThrownTime.TryGetValue(@event.Entityid, out var thrownTime)) 
         {
-            PrintToPlayerChat(@event.Userid, $"Decoy thrown by {@event.Userid.PlayerName} took {(DateTime.Now - thrownTime).TotalSeconds:0.00}s to detonate");
+            PrintToPlayerChat(@event.Userid, Localizer["matchzy.pracc.decop", @event.Userid.PlayerName, $"{(DateTime.Now - thrownTime).TotalSeconds:0.00}"]);
             lastGrenadeThrownTime.Remove(@event.Entityid);
         }
         return HookResult.Continue;

@@ -1,5 +1,39 @@
 # MatchZy Changelog
 
+# 0.7.7
+
+#### April 29, 2024
+
+- Added wingman support. Now, if `game_mode` is 2, plugin will automatically execute `live_wingman.cfg`. If `game_mode` is 1, `live.cfg` will be executed.
+- Setting `wingman` as `true` in match config json will now automatically set `game_mode 2` and reload the map. Wingman toggle from G5V will now also work.
+- Removed `UpdatePlayersMap` from player connect and disconnect methods to avoid it getting called multiple times on map change.
+- Made `SetMatchEndData` to be an async operation.
+- Added updated pt-PT translations.
+
+# 0.7.6
+
+#### April 28, 2024
+
+- Added remaining strings available for translation.
+- Fixed force-unpause command not working in knife round.
+- Fixed `cfg` folder not available in Windows build of MatchZy with CSSharp.
+
+# 0.7.5
+
+#### April 27, 2024
+
+- Upgraded CounterStrikeSharp to v217
+- Fixed CFG execution on Map Start (After the latest update, CFGs were getting overriden by gamemodes cfg. Hence, added a timer to delay MatchZy's CFG execution on MapStart)
+- Fixed BO2 setup, now Get5 server will be freed once the BO2 match is over
+
+# 0.7.4
+
+#### April 26, 2024
+
+- Upgraded CounterStrikeSharp to v215
+- Added Chinese (Simplified) translations.
+- Fixed wrong `[EventPlayerConnectFull] KICKING PLAYER` during match setup.
+
 # 0.7.3
 
 #### April 06, 2024

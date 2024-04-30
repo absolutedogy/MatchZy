@@ -8,12 +8,12 @@ using CounterStrikeSharp.API.Modules.Timers;
 
 namespace MatchZy
 {
-    [MinimumApiVersion(201)]
+    [MinimumApiVersion(215)]
     public partial class MatchZy : BasePlugin
     {
 
         public override string ModuleName => "MatchZy";
-        public override string ModuleVersion => "0.7.3";
+        public override string ModuleVersion => "0.7.7";
 
         public override string ModuleAuthor => "WD- (https://github.com/shobhit-pathak/)";
 
@@ -187,7 +187,8 @@ namespace MatchZy
             RegisterEventHandler<EventRoundFreezeEnd>(EventRoundFreezeEndHandler);
             RegisterListener<Listeners.OnClientDisconnectPost>(playerSlot => { 
                // May not be required, but just to be on safe side so that player data is properly updated in dictionaries
-                UpdatePlayersMap();
+               // Update: Commenting the below function as it was being called multiple times on map change.
+                // UpdatePlayersMap();
             });
             RegisterListener<Listeners.OnEntitySpawned>(OnEntitySpawnedHandler);
 
@@ -212,16 +213,12 @@ namespace MatchZy
 
                 CsTeam playerTeam = GetPlayerTeam(player);
 
-                if (@event.Team != (int)playerTeam)
+                if (@event.Team != (int)playerTeam && player.IsValid)
                 {
-                    if (player.IsValid)
+                    Server.NextFrame(() =>
                     {
-
-                        Server.NextFrame(() =>
-                        {
-                            player.SwitchTeam(playerTeam);
-                        });
-                    }
+                        player.SwitchTeam(playerTeam);
+                    });
                 }
                 return HookResult.Continue;
             });
@@ -287,13 +284,15 @@ namespace MatchZy
             // });
 
             RegisterListener<Listeners.OnMapStart>(mapName => { 
-                if (!isMatchSetup)
-                {
-                    AutoStart();
-                    return;
-                }
-                if (isWarmup) StartWarmup();
-                if (isPractice) StartPracticeMode();
+                AddTimer(1.0f, () => {
+                    if (!isMatchSetup)
+                    {
+                        AutoStart();
+                        return;
+                    }
+                    if (isWarmup) StartWarmup();
+                    if (isPractice) StartPracticeMode();
+                });
             });
 
             // RegisterListener<Listeners.OnMapEnd>(() => {
@@ -304,9 +303,8 @@ namespace MatchZy
             RegisterEventHandler<EventPlayerDeath>((@event, info) => {
                 // Setting money back to 16000 when a player dies in warmup
                 var player = @event.Userid;
-                if (isWarmup) {
-                    if (player.InGameMoneyServices != null) player.InGameMoneyServices.Account = 16000;
-                }
+                if (!isWarmup) return HookResult.Continue;
+                if (player.InGameMoneyServices != null) player.InGameMoneyServices.Account = 16000;
                 return HookResult.Continue;
             });
 
@@ -315,25 +313,20 @@ namespace MatchZy
 				CCSPlayerController attacker = @event.Attacker;
                 CCSPlayerController victim = @event.Userid;
 
-                if (isPractice)
+                if (isPractice && victim.IsBot)
                 {
-                    if (victim.IsBot) {
-                        int damage = @event.DmgHealth;
-                        int postDamageHealth = @event.Health;
-                        @event.Attacker.PrintToChat($"{chatPrefix} {damage} damage to BOT {victim.PlayerName}({postDamageHealth} health)");
-                    }
+                    int damage = @event.DmgHealth;
+                    int postDamageHealth = @event.Health;
+                    PrintToPlayerChat(@event.Attacker, Localizer["matchzy.pracc.damage", damage, victim.PlayerName, postDamageHealth]);
                     return HookResult.Continue;
                 }
 
 				if (!attacker.IsValid || attacker.IsBot && !(@event.DmgHealth > 0 || @event.DmgArmor > 0))
 					return HookResult.Continue;
-                if (matchStarted) {
-                    if (@event.Userid.TeamNum != attacker.TeamNum)
-                    {
-                        int targetId = (int)@event.Userid.UserId!;
-
-                        UpdatePlayerDamageInfo(@event, targetId);
-                    }
+                if (matchStarted && @event.Userid.TeamNum != attacker.TeamNum) 
+                {
+                    int targetId = (int)@event.Userid.UserId!;
+                    UpdatePlayerDamageInfo(@event, targetId);
                 }
 
 				return HookResult.Continue;
@@ -396,7 +389,8 @@ namespace MatchZy
                         if (commandArg != "") {
                             Server.PrintToChatAll($"{adminChatPrefix} {commandArg}");
                         } else {
-                            ReplyToUserCommand(player, "Usage: .asay <message>");
+                            // ReplyToUserCommand(player, "Usage: .asay <message>");
+                            ReplyToUserCommand(player, Localizer["matchzy.cc.usage", ".asay <message>"]);
                         }
                     } else {
                         SendPlayerNotAdminMessage(player);
@@ -529,10 +523,10 @@ namespace MatchZy
                 CCSPlayerController player = @event.Userid;
                 if (!isPractice) return HookResult.Continue;
 
-                if (@event.Attacker.IsValid && player.SteamID != @event.Attacker.SteamID)
+                if (@event.Attacker.IsValid)
                 {
                     double roundedBlindDuration = Math.Round(@event.BlindDuration, 2);
-                    @event.Attacker.PrintToChat($"{chatPrefix} Flashed {@event.Userid.PlayerName}. Blind time: {roundedBlindDuration} seconds");
+                    PrintToPlayerChat(@event.Attacker, Localizer["matchzy.pracc.blind", @event.Userid.PlayerName, roundedBlindDuration]);
                 }
                 var userId = player.UserId;
                 if (userId != null && noFlashList.Contains((int)userId))
